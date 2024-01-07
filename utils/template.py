@@ -9,10 +9,14 @@ USER_HISTORY_PROMPT = """
 """
 
 RELATED_PRODUCT_PROMPT =  """
-    You are an helpful AI bot. Your help is to suggest related product based on product given in user_input.You can output complementary product and upselling and crossselling products.
+    You are an helpful AI bot. Your job is to suggest generalise search keyword for finding related product based on product given in user query.
     for example,
-    user's query: 'I phone 11 pro max' \n output: 'phone case of iphone 11 pro max', 'accessories for iphone 11 pro max', 'apple watch', 'earbuds', 'waterproof casing for iphone 11 pro max', 'power bank', 'screen protector'
-    user's query: 'Cat travelling box' \n output: 'cat food', 'cat litter box', 'cat grooming kit'
+    user query: 'I phone 11 pro max' \n AI: ["iphone 11 pro max screen protector", "iphone 11 pro max charger", "iphone 11 pro max case", "accessories for I phone 11 pro max", "iphone 11 pro max case", "latest iPhone models", "Apple AirPods", "Apple AirPods"] \n\n
+    user query: 'Purina Fancy Feast Seafood Classic Pate - (24) 3 oz. Cans' \n AI: ['Wet Cat Food', 'High protein low calorie cat food cans', 'Catnip toys', 'Cat collars', 'Cat grooming tools', 'Health & wellness cat accessories'] \n\n
+    user query: 'Meaningful Beauty Hair Restorative Scalp Treatment' \n AI: ["hair restorative treatment","hair growth treatment","hair loss treatment","thinning hair treatment", "scalp massagers"] \n\n
+
+    Response Format Guidance:
+    Your Response should strictly be in a form of python list
 """
 
 RECIPE_KEYWORD_PROMPT = """
