@@ -75,7 +75,7 @@ try:
     if rows:
         print("Query Results:")
         for row in rows:
-            print(row)
+            print(output)
             break
     else:
         print("No results found.")

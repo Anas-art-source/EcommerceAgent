@@ -44,7 +44,7 @@ class Agent():
     while True:
         i+= 1
         output = openai.ChatCompletion.create(
-            model='gpt-3.5-turbo',
+            model='gpt-4',
             temperature=0.3,
             stream=False,
             messages=messages,
@@ -101,6 +101,8 @@ class Agent():
     return result
 
   def _sys_prompt_generator(self):
+    data_string = '[{"row_number": "84", "name": "Rhonda Larsen", "customerID": "eacf35c9-bd28-4ec6-bf5f-71a8d889be29", "address": "8035 Jason Dale Suite 661\\nLake Kelseyfurt, TN 56120", "interested_category": ["Beauty & Personal Care", "Toys & Games", "Tools & Home Improvement"], "past_purchase_category": ["Electronics", "Pet Supplies", "Books"], "past_purchase": [], "delivery_pending": [{"order_date": "2024-01-11", "estimated_delivery_date": "2024-01-15", "status_name": "Processing", "tracking_number": "d59c4ad7-acfb-4326-a8b8-8c7c4810d003", "total_amount": 483.28, "product_name": "Yale Assure Lock SL, Wi-Fi Smart Lock with Norwood Lever - Works with the Yale Access App, Amazon Alexa, Google Assistant,...", "price": 18.7, "carrier_name": "treat"}, {"order_date": "2024-01-21", "estimated_delivery_date": "2024-01-29", "status_name": "Processing", "tracking_number": "c5456e45-104c-4089-be20-867da04983e8", "total_amount": 445.55, "product_name": "Flash Furniture High Back Traditional Tufted Black LeatherSoft Executive Ergonomic Office Chair with Oversized Headrest & ...", "price": 31.2, "carrier_name": "use"}}]}]'
+
     prompt = f"""
       Answer the following questions and obey the following commands as best you can.
 
@@ -127,6 +129,93 @@ class Agent():
 
 
       Action should be the name of tool only such as [{", ".join([x['tool_name'] for x in self.tools])}]
+
+      Example Session:
+
+User Question: userid (eacf35c9-bd28-4ec6-bf5f-71a8d889be29): I need to find product that will interest me?
+
+Thought: User need to look for product is according to his interest and preferences. Therefore, I need to first look at users history to know about his interested categories and past purchases. Then I will generate search keywords related to customer past purchase. Finally, I will search for these products using keywords generated.
+Action: get_user_history
+Action Input: eacf35c9-bd28-4ec6-bf5f-71a8d889be29
+
+Observation: {data_string}
+
+Though: User, Rhonda, seems to be interested in 'Beauty & Personal Care', 'Toys & Games', 'Tools & Home Improvement', 'Electronics', 'Pet Supplies', and 'Books'. Therefore, I should pick any 1 category from above and use the get_related_product tool to generate a search query. Then I will use a search query to look for products.
+Action: get_related_product 
+Action Input: Beauty & Personal Care
+
+Observation: [‘Haircare routine’, “Natural beauty remedies”, “Skincare products”]
+
+Thought: Now, I know the search keywords to find product that will interest customer. I will use search_product to find relevant products.
+Action: search_product
+Action Input: Haircare routine
+
+Observation: following are the products Rhonda might me interested in:
+Product 1:
+Title: amika dream routine overnight hydrating hair mask, 100ml
+Description: (empty)
+Feature Bullets: (empty)
+Price:
+Symbol: $
+Currency: USD
+Current Price: 32
+Discounted: false
+Before Price: 32
+Savings Amount: 0
+Savings Percent: 0
+
+Title: PURA D'OR Hair Thinning Therapy Biotin Shampoo and Conditioner Set, CLINICALLY TESTED Proven Results, DHT Blocker Hair Thickening Products For Women & Men, Natural Routine, Color Safe, 16oz x2
+Description: (empty)
+Feature Bullets:
+INCREASED VOLUME, REDUCED THINNING: ...
+ORGANIC INGREDIENT BASED SHAMPOO: ...
+PROTECT & STRENGTHEN YOUR HAIR: ...
+IMPROVED HAIR APPEARANCE: ...
+THE PURA D'OR PROMISE: Healthy hair for happy customers. We offer a 100% Satisfaction Guarantee. If you are unsatisfied with our all natural shampoo and conditioner, let us know and we will give you a FULL refund.
+Price:
+Symbol: $
+Currency: USD
+Current Price: 24.69
+Discounted: false
+Before Price: 24.69
+Savings Amount: 0
+Savings Percent: 0
+Product 2:
+Title: OGX Thick & Full + Biotin & Collagen Shampoo & Conditioner Set, (packaging may vary), Purple, 13 Fl Oz (Pack of 2)
+Description: Plump up the volume in thin hair with the OGX Thick & Full + Biotin & Collagen Hair Volumizing Shampoo and Conditioner...
+Feature Bullets:
+PLUMP UP THE VOLUME: ...
+THICKER, FULLER, HEALTHIER: ...
+HAIR CARE INSPIRED BY NATURE: ...
+ALL-AROUND SENSORY EXPERIENCE: ...
+BEAUTY PURE & SIMPLE: For best results, use this OGX Biotin & Collagen hair care collection to help infuse nutrients into every strand.
+Price:
+Symbol: $
+Currency: USD
+Current Price: 10.9
+Discounted: true
+Before Price: 50
+Savings Amount: 39.1
+Savings Percent: 78.2
+
+
+Thought: I now know the final answer. I should use respond_to_human tool to give my final answer.
+Action: respond_to_human
+Action Input: Title: amika dream routine overnight hydrating hair mask, 100ml
+
+Unfortunately, the provided information for the amika dream routine overnight hydrating hair mask is quite limited, as the description and feature bullets are empty. However, it is priced at $32 USD, with no apparent discount, as both the discounted and savings fields indicate false values. Comparatively, we have more detailed information about the other two products, allowing for a more comprehensive analysis.
+
+Title: PURA D'OR Hair Thinning Therapy Biotin Shampoo and Conditioner Set, CLINICALLY TESTED Proven Results, DHT Blocker Hair Thickening Products For Women & Men, Natural Routine, Color Safe, 16oz x2
+
+The PURA D'OR Hair Thinning Therapy Biotin Shampoo and Conditioner Set seems to be a well-rounded solution for increased volume and reduced thinning, with organic ingredients enhancing its appeal. Priced at $24.69 USD, it offers a competitive option compared to the amika product. Additionally, the product emphasizes a 100% Satisfaction Guarantee, showing the brand's commitment to customer satisfaction.
+
+Product 2: OGX Thick & Full + Biotin & Collagen Shampoo & Conditioner Set, (packaging may vary), Purple, 13 Fl Oz (Pack of 2)
+
+The OGX Thick & Full + Biotin & Collagen Shampoo & Conditioner Set, priced at a discounted $10.9 USD from an original price of $50, provides a significant cost advantage. It focuses on volume enhancement and healthier hair, with a unique emphasis on a sensory experience. This product seems to be a budget-friendly yet effective choice, especially given the substantial 78.2% savings.
+
+In summary, while the amika product lacks detailed information, the PURA D'OR set offers a natural solution with a satisfaction guarantee at $24.69. On the other hand, the OGX set stands out for its budget-friendly pricing, discounted at $10.9 with a remarkable 78.2% savings, making it an attractive option for those looking for an economical yet quality hair care solution.
+
+
 
       Begin!
     """
