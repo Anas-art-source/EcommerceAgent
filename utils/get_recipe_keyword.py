@@ -10,4 +10,3 @@ def get_recipe_search_keyword(query):
   return recipe_search_keywords.answer(query)
 
 
-print(get_recipe_search_keyword("dsfasf"))

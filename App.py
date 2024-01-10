@@ -10,7 +10,7 @@ from utils.get_user_history import get_user_history
 from utils.compare_product import compare_products
 from utils.respond_to_human import respond_to_human
 from utils.search_product import search_product
-
+import time
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 
@@ -44,7 +44,7 @@ class Agent():
     while True:
         i+= 1
         output = openai.ChatCompletion.create(
-            model='gpt-4',
+            model='gpt-3.5-turbo',
             temperature=0.3,
             stream=False,
             messages=messages,
@@ -53,6 +53,7 @@ class Agent():
 
         #process each chunk
         responses  = output['choices'][0]['message']['content']
+        # self.print_response(responses)
         print(colored(responses, 'green'), end="", flush=True)
 
         callable_name, argument = self._callable_function(responses)
@@ -67,7 +68,7 @@ class Agent():
               { "role": "system", "content":  responses},
               {"role": "user", "content": f"Observation: {self.function_call_context}" },
             ])
-
+        time.sleep(5)
         print(" ")
 
 
@@ -99,6 +100,39 @@ class Agent():
     # Check if the pattern is found in the input string
     result = bool(re.search(pattern, input_string))
     return result
+  
+  def print_response(self,response_string):
+    # Define the regular expression pattern to extract information
+    pattern_thought = r'Thought: ([^"]+)\n'
+    pattern_action = r'Action: ([^"]+)\n'
+    pattern_action_input = r'Action Input: ([^"]+)'
+
+
+    # Find matches using the pattern
+    match_thought = re.search(pattern_thought, response_string)
+    match_action = re.search(pattern_action, response_string)
+    match_action_input = re.search(pattern_action_input, response_string)
+    if match_thought:
+        thought = match_thought.group()
+        # Print colored text
+        print(colored("Thought: ", 'green', attrs=["reverse", "blink"]), end="", flush=True)
+        print(thought)
+
+    # Find matches using the pattern
+
+    if match_action:
+        action = match_action.group()
+        # Print colored text
+        print(colored("Action: ", 'red', attrs=["reverse", "blink"]), end="", flush=True)
+        print(action)
+
+    # Find matches using the pattern
+
+    if match_action_input:
+        action_input = match_action_input.group()
+        # Print colored text
+        print(colored("Action Input: ", 'red',attrs=["reverse", "blink"]), end="", flush=True)
+        print(action_input)
 
   def _sys_prompt_generator(self):
     data_string = '[{"row_number": "84", "name": "Rhonda Larsen", "customerID": "eacf35c9-bd28-4ec6-bf5f-71a8d889be29", "address": "8035 Jason Dale Suite 661\\nLake Kelseyfurt, TN 56120", "interested_category": ["Beauty & Personal Care", "Toys & Games", "Tools & Home Improvement"], "past_purchase_category": ["Electronics", "Pet Supplies", "Books"], "past_purchase": [], "delivery_pending": [{"order_date": "2024-01-11", "estimated_delivery_date": "2024-01-15", "status_name": "Processing", "tracking_number": "d59c4ad7-acfb-4326-a8b8-8c7c4810d003", "total_amount": 483.28, "product_name": "Yale Assure Lock SL, Wi-Fi Smart Lock with Norwood Lever - Works with the Yale Access App, Amazon Alexa, Google Assistant,...", "price": 18.7, "carrier_name": "treat"}, {"order_date": "2024-01-21", "estimated_delivery_date": "2024-01-29", "status_name": "Processing", "tracking_number": "c5456e45-104c-4089-be20-867da04983e8", "total_amount": 445.55, "product_name": "Flash Furniture High Back Traditional Tufted Black LeatherSoft Executive Ergonomic Office Chair with Oversized Headrest & ...", "price": 31.2, "carrier_name": "use"}}]}]'
@@ -138,84 +172,24 @@ Thought: User need to look for product is according to his interest and preferen
 Action: get_user_history
 Action Input: eacf35c9-bd28-4ec6-bf5f-71a8d889be29
 
-Observation: {data_string}
+Observation: user data will be provided
 
 Though: User, Rhonda, seems to be interested in 'Beauty & Personal Care', 'Toys & Games', 'Tools & Home Improvement', 'Electronics', 'Pet Supplies', and 'Books'. Therefore, I should pick any 1 category from above and use the get_related_product tool to generate a search query. Then I will use a search query to look for products.
 Action: get_related_product 
 Action Input: Beauty & Personal Care
 
-Observation: [‘Haircare routine’, “Natural beauty remedies”, “Skincare products”]
+Observation: list of search keywords will be provided
 
 Thought: Now, I know the search keywords to find product that will interest customer. I will use search_product to find relevant products.
 Action: search_product
-Action Input: Haircare routine
+Action Input: one of the search keywords
 
-Observation: following are the products Rhonda might me interested in:
-Product 1:
-Title: amika dream routine overnight hydrating hair mask, 100ml
-Description: (empty)
-Feature Bullets: (empty)
-Price:
-Symbol: $
-Currency: USD
-Current Price: 32
-Discounted: false
-Before Price: 32
-Savings Amount: 0
-Savings Percent: 0
-
-Title: PURA D'OR Hair Thinning Therapy Biotin Shampoo and Conditioner Set, CLINICALLY TESTED Proven Results, DHT Blocker Hair Thickening Products For Women & Men, Natural Routine, Color Safe, 16oz x2
-Description: (empty)
-Feature Bullets:
-INCREASED VOLUME, REDUCED THINNING: ...
-ORGANIC INGREDIENT BASED SHAMPOO: ...
-PROTECT & STRENGTHEN YOUR HAIR: ...
-IMPROVED HAIR APPEARANCE: ...
-THE PURA D'OR PROMISE: Healthy hair for happy customers. We offer a 100% Satisfaction Guarantee. If you are unsatisfied with our all natural shampoo and conditioner, let us know and we will give you a FULL refund.
-Price:
-Symbol: $
-Currency: USD
-Current Price: 24.69
-Discounted: false
-Before Price: 24.69
-Savings Amount: 0
-Savings Percent: 0
-Product 2:
-Title: OGX Thick & Full + Biotin & Collagen Shampoo & Conditioner Set, (packaging may vary), Purple, 13 Fl Oz (Pack of 2)
-Description: Plump up the volume in thin hair with the OGX Thick & Full + Biotin & Collagen Hair Volumizing Shampoo and Conditioner...
-Feature Bullets:
-PLUMP UP THE VOLUME: ...
-THICKER, FULLER, HEALTHIER: ...
-HAIR CARE INSPIRED BY NATURE: ...
-ALL-AROUND SENSORY EXPERIENCE: ...
-BEAUTY PURE & SIMPLE: For best results, use this OGX Biotin & Collagen hair care collection to help infuse nutrients into every strand.
-Price:
-Symbol: $
-Currency: USD
-Current Price: 10.9
-Discounted: true
-Before Price: 50
-Savings Amount: 39.1
-Savings Percent: 78.2
+Observation: Product details will be provided
 
 
 Thought: I now know the final answer. I should use respond_to_human tool to give my final answer.
 Action: respond_to_human
-Action Input: Title: amika dream routine overnight hydrating hair mask, 100ml
-
-Unfortunately, the provided information for the amika dream routine overnight hydrating hair mask is quite limited, as the description and feature bullets are empty. However, it is priced at $32 USD, with no apparent discount, as both the discounted and savings fields indicate false values. Comparatively, we have more detailed information about the other two products, allowing for a more comprehensive analysis.
-
-Title: PURA D'OR Hair Thinning Therapy Biotin Shampoo and Conditioner Set, CLINICALLY TESTED Proven Results, DHT Blocker Hair Thickening Products For Women & Men, Natural Routine, Color Safe, 16oz x2
-
-The PURA D'OR Hair Thinning Therapy Biotin Shampoo and Conditioner Set seems to be a well-rounded solution for increased volume and reduced thinning, with organic ingredients enhancing its appeal. Priced at $24.69 USD, it offers a competitive option compared to the amika product. Additionally, the product emphasizes a 100% Satisfaction Guarantee, showing the brand's commitment to customer satisfaction.
-
-Product 2: OGX Thick & Full + Biotin & Collagen Shampoo & Conditioner Set, (packaging may vary), Purple, 13 Fl Oz (Pack of 2)
-
-The OGX Thick & Full + Biotin & Collagen Shampoo & Conditioner Set, priced at a discounted $10.9 USD from an original price of $50, provides a significant cost advantage. It focuses on volume enhancement and healthier hair, with a unique emphasis on a sensory experience. This product seems to be a budget-friendly yet effective choice, especially given the substantial 78.2% savings.
-
-In summary, while the amika product lacks detailed information, the PURA D'OR set offers a natural solution with a satisfaction guarantee at $24.69. On the other hand, the OGX set stands out for its budget-friendly pricing, discounted at $10.9 with a remarkable 78.2% savings, making it an attractive option for those looking for an economical yet quality hair care solution.
-
-
+Action Input: respond based on the observation
 
       Begin!
     """
@@ -234,7 +208,7 @@ for tool in tools:
       'description': tool.__doc__
   })
 
-print(tools_repo)
+# print(tools_repo)
 
 tools_description = "\n".join([f"{x['tool_name']}: {x['description']} \n" for x in tools_repo])
 
