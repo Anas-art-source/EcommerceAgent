@@ -10,6 +10,7 @@ from utils.get_user_history import get_user_history
 from utils.compare_product import compare_products
 from utils.respond_to_human import respond_to_human
 from utils.search_product import search_product
+from utils.get_company_policy import get_company_policy
 import time
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
@@ -200,7 +201,7 @@ Action Input: respond based on the observation
 
 tools_repo = []
 
-tools=[get_recipe_search_keyword, get_related_product, get_user_history, compare_products,respond_to_human,search_product]
+tools=[get_recipe_search_keyword, get_related_product, get_user_history, compare_products,respond_to_human,search_product,get_company_policy]
 for tool in tools:
   tools_repo.append({
       'tool_name': tool.__name__,
